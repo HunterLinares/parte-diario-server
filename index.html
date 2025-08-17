@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Parte Diario - Security Men</title>
+
+  <!-- Manifest para PWA -->
+  <link rel="manifest" href="manifest.json" />
+  <!-- Apple Touch Icon -->
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+
+  <!-- Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js')
+        .then(() => console.log('Service Worker registrado'))
+        .catch(err => console.error('Error al registrar SW:', err));
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: #0a2a4a;
+      color: white;
+    }
+    h1 {
+      text-align: center;
+      color: #ffd700;
+    }
+    label {
+      font-weight: bold;
+      margin-top: 10px;
+      display: block;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      margin-bottom: 15px;
+      border: none;
+      border-radius: 5px;
+      background: #ffffff;
+      color: #000;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #0078D7;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+    button:hover {
+      background-color: #005fa3;
+    }
+    .footer {
+      text-align: center;
+      font-size: 12px;
+      color: #ccc;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>SECURITY MEN, S.L.</h1>
+  <p style="text-align:center;">EMPRESA NÚMERO DGSP 4143</p>
+  <h2 style="text-align:center;">PARTE DIARIO DE TRABAJO</h2>
+
+  <div id="parteForm">
+    <label>Fecha</label>
+    <input type="date" name="fecha" required />
+    <small>jueves, 14 de agosto de 2025</small>
+
+    <label>Cliente</label>
+    <input type="text" name="cliente" placeholder="Nombre del cliente" required />
+
+    <label>Referencia (opcional)</label>
+    <input type="text" name="referencia" placeholder="Número de referencia" />
+
+    <label>Horario</label>
+    <input type="text" name="horario" placeholder="Ej: 08:00 - 16:00" required />
+
+    <label>Tareas Realizadas</label>
+    <textarea name="tareas" rows="5" placeholder="Describa detalladamente las tareas realizadas durante la jornada..." required></textarea>
+
+    <button type="button" onclick="generarPDF()">📄 Generar PDF</button>
+    <button type="button" onclick="enviarEmail()">📧 Enviar por Email</button>
+  </div>
+
+  <div class="footer">
+    Sistema de Parte Diario ©<br />
+    Compatibilidad garantizada en móviles y navegadores
+  </div>
+
+  <!-- Librería html2pdf.js -->
+  https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js
+
+  <script>
+    function generarPDF() {
+      const elemento = document.getElementById('parteForm');
+      html2pdf().set({
+        margin: 10,
+        filename: 'parte_diario.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      }).from(elemento).save();
+    }
+
+    function enviarEmail() {
+      const form = document.querySelector('#parteForm');
+      const inputs = form.querySelectorAll('input, textarea');
+      const datos = {};
+      inputs.forEach(input => {
+        datos[input.name] = input.value;
+      });
+
+      const asunto = `Parte Diario - ${datos.fecha}`;
+      const cuerpo = `
+Cliente: ${datos.cliente}
+Referencia: ${datos.referencia}
+Horario: ${datos.horario}
+Tareas Realizadas:
+${datos.tareas}
+      `;
+      const mailto = `mailto:?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
+      window.location.href = mailto;
+    }
+  </script>
+</body>
+</html>
